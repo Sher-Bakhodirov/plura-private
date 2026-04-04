@@ -10,7 +10,7 @@ interface NavigationProps {
 
 export default function Navigation({ user }: NavigationProps) {
   return (
-    <div className="p-4 flex items-center justify-between relative">
+    <div className="p-4 flex items-center justify-between fixed top-0 left-0 right-0 z-50 bg-background/50 backdrop-blur-sm">
       <aside className="flex items-center gap-2">
         <Image src="./assets/plura-logo.svg" width={40} height={40} alt="Plura logo" />
         <span className="text-xl font-bold">Plura</span>
