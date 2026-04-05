@@ -8,28 +8,34 @@ function UnAuthorized() {
   return <div>Not authorized</div>
 }
 
-function CreateAgencyForm() {
-
-}
-
 interface AgencyPageSearchProps {
-  searchParams: {
+  searchParams: Promise<{
     plan: Plan,
     state: string,
     code: string
-  }
+  }>
 }
 
-export default async function AgencyPage({ searchParams: { plan, state, code } }: AgencyPageSearchProps) {
+export default async function AgencyPage({ searchParams }: AgencyPageSearchProps) {
+  const { plan, state, code } = await searchParams
   const agencyId = await verifyAndAcceptInvitation()
   const user = await getAuthUserDetails();
 
-  if (!agencyId || !user) {
-    return <UnAuthorized />
+  if (!agencyId) {
+    const authUser = await currentUser()
+
+    return (
+      <div className="flex w-full justify-center items-center mt-4 px-4 py-10">
+        <div className="flex w-full max-w-[850px] flex-col gap-8">
+          <h1 className="text-4xl">Create An Agency</h1>
+          <AgencyDetails data={{ companyEmail: authUser?.emailAddresses[0].emailAddress }} />
+        </div>
+      </div>
+    )
   }
 
-  const isSubAccountUser = user.role === 'SUBACCOUNT_GUEST' || user.role === 'SUBACCOUNT_USER';
-  const isAgencyUser = user.role === 'AGENCY_OWNER' || user.role === 'AGENCY_ADMIN'
+  const isSubAccountUser = user?.role === 'SUBACCOUNT_GUEST' || user?.role === 'SUBACCOUNT_USER';
+  const isAgencyUser = user?.role === 'AGENCY_OWNER' || user?.role === 'AGENCY_ADMIN'
 
   if (isSubAccountUser) {
     return redirect('/subaccount')
@@ -49,17 +55,5 @@ export default async function AgencyPage({ searchParams: { plan, state, code } }
 
     return redirect(`/agency/${stateAgencyId}/${statePath}?code=${code}`)
   }
-
-  const authUser = await currentUser()
-
-  return (
-    <div className="flex justify-center items-center mt-4">
-      <div className="max-w-[850px] border-[1px] p-4 rounded-xl">
-        <h1 className="text-4xl">Create An Agency</h1>
-
-        <AgencyDetails data={{ companyEmail: authUser?.emailAddresses[0].emailAddress }} />
-      </div>
-    </div>
-  )
 }
 

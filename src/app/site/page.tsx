@@ -16,7 +16,7 @@ export default function Home() {
           <h1 className="text-9xl font-bold text-center md:text-[300px]">Plura</h1>
         </div>
         <div className="flex justify-center items-center relative md:mt-[-70px]">
-          <Image src="/assets/preview.png" loading="eager" alt="Preview" width={1200} height={1200} className="rounded-tl-2xl rounded-tr-2xl border-2 border-muted" />
+          <Image src="/assets/preview.png" loading="eager" alt="Preview" width={1200} height={1200} className="rounded-t-lg border-2 border-muted" />
         </div>
         <div className="bottom-0 top-[50%] bg-gradient-to-t dark:from-background left-0 right-0 absolute z-10"></div>
       </section>
@@ -28,7 +28,7 @@ export default function Home() {
         </p>
         <div className="flex justify-center gap-4 flex-wrap mt-6">
           {PRICING.map((pricing) => (
-            // WIP: wire up free plan
+            // TODO: wire up free plan
             <Card
               key={pricing.title}
               className={clsx('w-[300px] flex flex-col justify-between', { "border-2 border-primary": pricing.title === "Unlimited Saas" })}
