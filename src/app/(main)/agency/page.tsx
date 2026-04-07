@@ -18,7 +18,7 @@ interface AgencyPageSearchProps {
 
 export default async function AgencyPage({ searchParams }: AgencyPageSearchProps) {
   const { plan, state, code } = await searchParams
-  const agencyId = await verifyAndAcceptInvitation()
+  const agencyId = await verifyAndAcceptInvitation();
   const user = await getAuthUserDetails();
 
   if (!agencyId) {

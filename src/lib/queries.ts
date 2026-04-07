@@ -1,9 +1,10 @@
 'use server'
 
-import { Agency, Plan, User } from "@/generated/prisma/client";
+import { User } from "@/generated/prisma/client";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "./db";
+import { logger } from "./utils";
 
 export const getAuthUserDetails = async () => {
   const user = await currentUser()
@@ -180,42 +181,19 @@ export const verifyAndAcceptInvitation = async () => {
         where: { email: userDetails.email }
       })
 
-      return userDetails
+      return userDetails.agencyId
     } else {
       return null
     }
   } else {
-    const agency = await db.user.findUnique({
+    const existingUser = await db.user.findUnique({
       where: {
         email: user.emailAddresses[0].emailAddress
       }
     })
 
-    return agency ? agency.id : null
+    return existingUser ? existingUser.agencyId : null
   }
-}
-
-export const updateAgencyDetails = async (agencyId: string, agencyDetails: Partial<Agency>) => {
-  const response = await db.agency.update({
-    where: {
-      id: agencyId
-    },
-    data: {
-      ...agencyDetails
-    }
-  })
-
-  return response
-}
-
-export const deleteAgency = async (agencyId: string) => {
-  const response = await db.agency.delete({
-    where: {
-      id: agencyId
-    }
-  })
-
-  return response
 }
 
 export const initUser = async (newUser: Partial<User>) => {
@@ -245,58 +223,4 @@ export const initUser = async (newUser: Partial<User>) => {
   })
 
   return userData
-}
-
-export const upsertAgency = async (agency: Agency, price: Plan) => {
-  if (!agency.companyEmail) return null;
-
-  try {
-    const response = await db.agency.upsert({
-      where: {
-        id: agency.id
-      },
-      update: agency,
-      create: {
-        users: {
-          connect: { email: agency.companyEmail }
-        },
-        ...agency,
-        sidebarOption: {
-          create: [
-            {
-              name: "Dashboard",
-              icon: "category",
-              link: `/agency/${agency.id}`,
-            },
-            {
-              name: "Launchpad",
-              icon: "clipboardIcon",
-              link: `/agency/${agency.id}/launchpad`,
-            },
-            {
-              name: "Billing",
-              icon: "payment",
-              link: `/agency/${agency.id}/billing`,
-            },
-            {
-              name: "Settings",
-              icon: "settings",
-              link: `/agency/${agency.id}/settings`,
-            },
-            {
-              name: "Sub Accounts",
-              icon: "person",
-              link: `/agency/${agency.id}/all-subaccounts`,
-            },
-            {
-              name: "Team",
-              icon: "shield",
-              link: `/agency/${agency.id}/team`,
-            },
-          ],
-        }
-      },
-
-    })
-  } catch (error) { }
 }

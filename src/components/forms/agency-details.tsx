@@ -1,7 +1,8 @@
 'use client'
 
 import { Agency } from "@/generated/prisma/client"
-import { deleteAgency, initUser, saveActivityLogsNotification, updateAgencyDetails, upsertAgency } from "@/lib/queries"
+import { initUser } from "@/lib/queries"
+import { deleteAgency, upsertAgency } from "@/queries/agency"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { NumberInput } from '@tremor/react'
 import {
@@ -172,18 +173,21 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
           goal: values.goal,
         }, "price_1OpACCFdfEv15JJwACWCyqW2")
 
-        toast.success("Agency created successfully");
-
-        if (data?.id || response) {
-          return router.refresh();
+        if (!response) {
+          toast.error("Oops!", {
+            description: "Could not create your agency. Please try again.",
+          })
+          return
         }
+
+        toast.success("Agency created successfully")
+        return router.refresh()
       }
     } catch (error) {
-      toast.error("Oppse!", {
+      toast.error("Oops!", {
         description: "Could not create your agency. Please try again.",
-      });
+      })
       console.log(error)
-      return;
     }
   }
 
@@ -248,7 +252,6 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                     description="Name and logo are the first things clients and sub-accounts associate with you."
                   >
                     <FormField
-                      disabled={isLoading}
                       control={form.control}
                       name="name"
                       render={({ field }) => (
@@ -258,6 +261,7 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                             <Input
                               placeholder="e.g. Northwind Digital"
                               autoComplete="organization"
+                              disabled={isLoading}
                               {...field}
                             />
                           </FormControl>
@@ -267,7 +271,6 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                     />
 
                     <FormField
-                      disabled={isLoading}
                       control={form.control}
                       name="agencyLogo"
                       render={({ field }) => (
@@ -301,7 +304,6 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                   >
                     <div className="grid gap-4 sm:grid-cols-2">
                       <FormField
-                        disabled={isLoading}
                         control={form.control}
                         name="companyEmail"
                         render={({ field }) => (
@@ -312,6 +314,7 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                                 type="email"
                                 placeholder="you@company.com"
                                 autoComplete="email"
+                                disabled={isLoading}
                                 {...field}
                               />
                             </FormControl>
@@ -320,7 +323,6 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                         )}
                       />
                       <FormField
-                        disabled={isLoading}
                         control={form.control}
                         name="companyPhone"
                         render={({ field }) => (
@@ -331,6 +333,7 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                                 type="tel"
                                 placeholder="+1 (555) 000-0000"
                                 autoComplete="tel"
+                                disabled={isLoading}
                                 {...field}
                               />
                             </FormControl>
@@ -348,7 +351,6 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                     description="Used where a business address belongs—invoices, compliance, and formal notices."
                   >
                     <FormField
-                      disabled={isLoading}
                       control={form.control}
                       name="address"
                       render={({ field }) => (
@@ -360,6 +362,7 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                               autoComplete="street-address"
                               rows={3}
                               className="min-h-[4.5rem] resize-y"
+                              disabled={isLoading}
                               {...field}
                             />
                           </FormControl>
@@ -370,7 +373,6 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <FormField
-                        disabled={isLoading}
                         control={form.control}
                         name="city"
                         render={({ field }) => (
@@ -380,6 +382,7 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                               <Input
                                 placeholder="City"
                                 autoComplete="address-level2"
+                                disabled={isLoading}
                                 {...field}
                               />
                             </FormControl>
@@ -388,7 +391,6 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                         )}
                       />
                       <FormField
-                        disabled={isLoading}
                         control={form.control}
                         name="zipCode"
                         render={({ field }) => (
@@ -398,6 +400,7 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                               <Input
                                 placeholder="ZIP or postal code"
                                 autoComplete="postal-code"
+                                disabled={isLoading}
                                 {...field}
                               />
                             </FormControl>
@@ -409,7 +412,6 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
 
                     <div className="grid gap-4 sm:grid-cols-2">
                       <FormField
-                        disabled={isLoading}
                         control={form.control}
                         name="state"
                         render={({ field }) => (
@@ -419,6 +421,7 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                               <Input
                                 placeholder="State or province"
                                 autoComplete="address-level1"
+                                disabled={isLoading}
                                 {...field}
                               />
                             </FormControl>
@@ -428,7 +431,6 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                       />
 
                       <FormField
-                        disabled={isLoading}
                         control={form.control}
                         name="country"
                         render={({ field }) => (
@@ -438,6 +440,7 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                               <Input
                                 placeholder="Country"
                                 autoComplete="country-name"
+                                disabled={isLoading}
                                 {...field}
                               />
                             </FormControl>
@@ -456,7 +459,6 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                   >
                     {!data?.id && (
                       <FormField
-                        disabled={isLoading}
                         control={form.control}
                         name="goal"
                         render={({ field }) => (
@@ -466,22 +468,15 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                               How many client workspaces you are planning toward. Adjust anytime as you scale.
                             </FormDescription>
                             <NumberInput
-                              defaultValue={data?.goal}
-                              onValueChange={async (value: number) => {
-                                if (!data?.id) return;
-
-                                await updateAgencyDetails(data.id, { goal: value })
-                                await saveActivityLogsNotification({
-                                  agencyId: data.id,
-                                  description: `Updated agency goal to ${value} sub-accounts`,
-                                })
-                                router.refresh()
+                              value={field.value}
+                              onValueChange={(value: number) => {
+                                field.onChange(value)
                               }}
                               min={1}
+                              disabled={isLoading}
                               className="bg-background !border !border-input px-2 rounded-md"
                               placeholder="Sub Account Goal"
-                            >
-                            </NumberInput>
+                            />
 
                             <FormMessage />
                           </FormItem>
@@ -490,7 +485,6 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                     )}
 
                     <FormField
-                      disabled={isLoading}
                       control={form.control}
                       name="whiteLabel"
                       render={({ field }) => (
@@ -505,6 +499,7 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
                             <Switch
                               checked={field.value}
                               onCheckedChange={field.onChange}
+                              disabled={isLoading}
                               className="shrink-0"
                             />
                           </FormControl>
@@ -542,7 +537,7 @@ export default function AgencyDetails({ data }: AgencyDetailsProps) {
           </Form>
         </Card>
 
-        {!data?.id && (
+        {data?.id && (
           <AlertDialog>
             <Card className="w-full border border-destructive/50 bg-card shadow-sm">
               <CardHeader>
